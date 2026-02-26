@@ -12,8 +12,14 @@ namespace OfflineVoxelMining.Events
 
     public readonly struct ChunkLoadedEvent : IGameEvent
     {
-        public ChunkLoadedEvent(Vector3Int chunkCoord) => ChunkCoord = chunkCoord;
+        public ChunkLoadedEvent(Vector3Int chunkCoord, int lod)
+        {
+            ChunkCoord = chunkCoord;
+            LOD = lod;
+        }
+
         public Vector3Int ChunkCoord { get; }
+        public int LOD { get; }
     }
 
     public readonly struct ResourceCollectedEvent : IGameEvent
@@ -30,18 +36,20 @@ namespace OfflineVoxelMining.Events
 
     public readonly struct VehicleTelemetryEvent : IGameEvent
     {
-        public VehicleTelemetryEvent(float wheelForce, float engineTemp, float energyRate, float stress)
+        public VehicleTelemetryEvent(float wheelForce, float engineTemp, float energyRate, float stress, float fuelLevel)
         {
             WheelForce = wheelForce;
             EngineTemperature = engineTemp;
             EnergyRate = energyRate;
             MechanicalStress = stress;
+            FuelLevel = fuelLevel;
         }
 
         public float WheelForce { get; }
         public float EngineTemperature { get; }
         public float EnergyRate { get; }
         public float MechanicalStress { get; }
+        public float FuelLevel { get; }
     }
 
     public readonly struct HazardTriggeredEvent : IGameEvent

@@ -15,19 +15,20 @@ namespace OfflineVoxelMining.AI
     {
         public static List<Vector3> FindPath(Vector3 start, Vector3 goal, IAStarGrid grid)
         {
-            var open = new PriorityQueue<Vector3, float>();
+            var open = new List<Vector3> { start };
             var cameFrom = new Dictionary<Vector3, Vector3>();
             var gScore = new Dictionary<Vector3, float> { [start] = 0f };
-            open.Enqueue(start, 0f);
+            var fScore = new Dictionary<Vector3, float> { [start] = grid.Heuristic(start, goal) };
 
             while (open.Count > 0)
             {
-                var current = open.Dequeue();
+                var current = GetLowestF(open, fScore);
                 if (Vector3.Distance(current, goal) < 0.1f)
                 {
                     return Reconstruct(cameFrom, current);
                 }
 
+                open.Remove(current);
                 foreach (var neighbor in grid.GetNeighbors(current))
                 {
                     if (!grid.IsWalkable(neighbor)) continue;
@@ -37,12 +38,34 @@ namespace OfflineVoxelMining.AI
 
                     cameFrom[neighbor] = current;
                     gScore[neighbor] = tentativeG;
-                    var fScore = tentativeG + grid.Heuristic(neighbor, goal);
-                    open.Enqueue(neighbor, fScore);
+                    fScore[neighbor] = tentativeG + grid.Heuristic(neighbor, goal);
+
+                    if (!open.Contains(neighbor))
+                    {
+                        open.Add(neighbor);
+                    }
                 }
             }
 
             return new List<Vector3>();
+        }
+
+        private static Vector3 GetLowestF(List<Vector3> open, Dictionary<Vector3, float> fScore)
+        {
+            var best = open[0];
+            var bestScore = fScore.TryGetValue(best, out var first) ? first : float.MaxValue;
+            for (var i = 1; i < open.Count; i++)
+            {
+                var candidate = open[i];
+                var score = fScore.TryGetValue(candidate, out var s) ? s : float.MaxValue;
+                if (score < bestScore)
+                {
+                    best = candidate;
+                    bestScore = score;
+                }
+            }
+
+            return best;
         }
 
         private static List<Vector3> Reconstruct(Dictionary<Vector3, Vector3> cameFrom, Vector3 current)

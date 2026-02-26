@@ -12,8 +12,14 @@ namespace OfflineVoxelMining.Managers
 
         public override void Initialize(GameBootstrap bootstrap)
         {
-            sandboxUnlimited = bootstrap.CurrentMode == GameMode.InfiniteSandbox;
+            sandboxUnlimited = bootstrap.ActiveRules.UnlimitedMoney;
             GameEventBus.Subscribe<ResourceCollectedEvent>(OnResourceCollected);
+            GameEventBus.Subscribe<GameModeChangedEvent>(OnModeChanged);
+        }
+
+        public int GetAmount(string resourceId)
+        {
+            return inventory.TryGetValue(resourceId, out var amount) ? amount : 0;
         }
 
         public bool TrySpend(string resourceId, int amount)
@@ -32,6 +38,11 @@ namespace OfflineVoxelMining.Managers
             return true;
         }
 
+        private void OnModeChanged(GameModeChangedEvent evt)
+        {
+            sandboxUnlimited = GameModeRuleBook.Resolve(evt.Mode).UnlimitedMoney;
+        }
+
         private void OnResourceCollected(ResourceCollectedEvent evt)
         {
             if (!inventory.ContainsKey(evt.ResourceId))
@@ -45,6 +56,7 @@ namespace OfflineVoxelMining.Managers
         public override void Shutdown()
         {
             GameEventBus.Unsubscribe<ResourceCollectedEvent>(OnResourceCollected);
+            GameEventBus.Unsubscribe<GameModeChangedEvent>(OnModeChanged);
         }
     }
 }

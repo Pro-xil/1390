@@ -27,7 +27,7 @@ namespace OfflineVoxelMining.UI
 
         private void OnTelemetry(VehicleTelemetryEvent evt)
         {
-            Debug.Log($"Telemetry | Wheel:{evt.WheelForce:F2} Temp:{evt.EngineTemperature:F1}C Energy:{evt.EnergyRate:F2} Stress:{evt.MechanicalStress:F2}");
+            Debug.Log($"Telemetry | Wheel:{evt.WheelForce:F2} Temp:{evt.EngineTemperature:F1}C Energy:{evt.EnergyRate:F2} Stress:{evt.MechanicalStress:F2} Fuel:{evt.FuelLevel:F1}");
         }
     }
 }

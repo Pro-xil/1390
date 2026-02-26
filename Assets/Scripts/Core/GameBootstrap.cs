@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using OfflineVoxelMining.Events;
 using OfflineVoxelMining.Managers;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ namespace OfflineVoxelMining.Core
         private readonly List<ManagerBase> managers = new();
 
         public GameMode CurrentMode { get; private set; }
+        public GameModeRules ActiveRules => GameModeRuleBook.Resolve(CurrentMode);
 
         private void Awake()
         {
@@ -21,6 +23,19 @@ namespace OfflineVoxelMining.Core
             {
                 manager.Initialize(this);
             }
+
+            GameEventBus.Publish(new GameModeChangedEvent(CurrentMode));
+        }
+
+        public void SetMode(GameMode mode)
+        {
+            if (CurrentMode == mode)
+            {
+                return;
+            }
+
+            CurrentMode = mode;
+            GameEventBus.Publish(new GameModeChangedEvent(mode));
         }
 
         private void OnDestroy()

@@ -16,23 +16,44 @@ namespace OfflineVoxelMining.Managers
         public override void Initialize(GameBootstrap owner)
         {
             bootstrap = owner;
-            GameEventBus.Publish(new GameModeChangedEvent(bootstrap.CurrentMode));
+            ApplyMode(owner.CurrentMode);
+            GameEventBus.Subscribe<GameModeChangedEvent>(OnModeChanged);
             Debug.Log($"GameManager initialized in mode: {bootstrap.CurrentMode} (Offline Only)");
         }
 
         public void SetMode(GameMode mode)
         {
-            GameEventBus.Publish(new GameModeChangedEvent(mode));
+            bootstrap.SetMode(mode);
         }
 
         public void ToggleGodMode(bool enabled)
         {
+            if (!bootstrap.ActiveRules.AllowGodMode)
+            {
+                godMode = false;
+                return;
+            }
+
             godMode = enabled;
             Debug.Log($"Sandbox God Mode: {enabled}");
         }
 
+        private void OnModeChanged(GameModeChangedEvent evt)
+        {
+            ApplyMode(evt.Mode);
+        }
+
+        private void ApplyMode(GameMode mode)
+        {
+            if (mode != GameMode.InfiniteSandbox)
+            {
+                godMode = false;
+            }
+        }
+
         public override void Shutdown()
         {
+            GameEventBus.Unsubscribe<GameModeChangedEvent>(OnModeChanged);
             Debug.Log("GameManager shutdown complete.");
         }
     }
